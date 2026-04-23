@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Яхтинг 23–30 мая · Shopping List</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      color: #1a2332;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%);
+      color: white;
+      padding: 40px 24px 32px;
+      text-align: center;
+    }
+    .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+    .header .sub { margin-top: 8px; font-size: 15px; opacity: 0.75; }
+    .header .stats {
+      display: flex; justify-content: center; gap: 32px;
+      margin-top: 24px;
+    }
+    .stat { text-align: center; }
+    .stat .val { font-size: 28px; font-weight: 700; }
+    .stat .lbl { font-size: 11px; opacity: 0.65; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .tab {
+      flex: 1; padding: 14px 8px; text-align: center;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border-bottom: 3px solid transparent;
+      color: #64748b; transition: all 0.2s;
+    }
+    .tab.active { color: #2d6a9f; border-bottom-color: #2d6a9f; }
+
+    /* CONTENT */
+    .content { display: none; padding: 20px 16px; max-width: 720px; margin: 0 auto; }
+    .content.active { display: block; }
+
+    /* CREW */
+    .crew-section {
+      background: white; border-radius: 12px;
+      padding: 20px; margin-bottom: 20px;
+    }
+    .crew-section h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .crew-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+    }
+    .crew-item input {
+      width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px;
+      padding: 10px 12px; font-size: 14px; outline: none;
+      transition: border-color 0.2s;
+    }
+    .crew-item input:focus { border-color: #2d6a9f; }
+    .crew-add-btn {
+      margin-top: 10px; background: none; border: 1.5px dashed #cbd5e0;
+      border-radius: 8px; padding: 10px 16px; font-size: 13px;
+      color: #64748b; cursor: pointer; width: 100%; transition: all 0.2s;
+    }
+    .crew-add-btn:hover { border-color: #2d6a9f; color: #2d6a9f; }
+
+    /* CATEGORIES */
+    .category {
+      background: white; border-radius: 12px;
+      margin-bottom: 16px; overflow: hidden;
+    }
+    .cat-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; cursor: pointer;
+      background: white;
+    }
+    .cat-header:hover { background: #f8fafc; }
+    .cat-title {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15px;
+    }
+    .cat-icon { font-size: 20px; }
+    .cat-count {
+      font-size: 12px; color: #94a3b8; font-weight: 400;
+    }
+    .cat-toggle { color: #94a3b8; font-size: 18px; transition: transform 0.2s; }
+    .cat-toggle.open { transform: rotate(90deg); }
+
+    .cat-body { border-top: 1px solid #f1f5f9; }
+
+    .item-row {
+      display: grid;
+      grid-template-columns: 24px 1fr auto 80px 32px;
+      align-items: center; gap: 8px;
+      padding: 11px 20px;
+      border-bottom: 1px solid #f8fafc;
+      transition: background 0.15s;
+    }
+    .item-row:hover { background: #fafbfc; }
+    .item-row:last-child { border-bottom: none; }
+
+    .item-check {
+      width: 20px; height: 20px;
+      border: 2px solid #cbd5e0; border-radius: 5px;
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .item-check.checked {
+      background: #22c55e; border-color: #22c55e;
+      color: white;
+    }
+    .item-check.checked::after { content: '✓'; font-size: 13px; font-weight: 700; }
+
+    .item-name { font-size: 14px; }
+    .item-name.checked-text { text-decoration: line-through; color: #94a3b8; }
+    .item-comment { font-size: 11px; color: #94a3b8; font-style: italic; }
+
+    .item-qty {
+      font-size: 13px; color: #475569; text-align: right;
+      white-space: nowrap;
+    }
+
+    .item-edit-qty {
+      width: 70px; border: 1.5px solid #e2e8f0; border-radius: 6px;
+      padding: 5px 8px; font-size: 13px; text-align: center;
+      outline: none; display: none;
+    }
+    .item-edit-qty:focus { border-color: #2d6a9f; display: block; }
+
+    .item-del {
+      background: none; border: none; color: #e2e8f0;
+      cursor: pointer; font-size: 16px; padding: 2px 4px;
+      transition: color 0.15s;
+    }
+    .item-del:hover { color: #ef4444; }
+
+    /* ADD ITEM */
+    .add-item-row {
+      display: flex; gap: 8px; padding: 12px 20px;
+      border-top: 1px solid #f1f5f9;
+    }
+    .add-item-input {
+      flex: 1; border: 1.5px solid #e2e8f0; border-radius: 8px;
+      padding: 9px 12px; font-size: 14px; outline: none;
+    }
+    .add-item-input:focus { border-color: #2d6a9f; }
+    .add-item-qty {
+      width: 80px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+      padding: 9px 8px; font-size: 13px; outline: none; text-align: center;
+    }
+    .add-item-qty:focus { border-color: #2d6a9f; }
+    .add-btn {
+      background: #2d6a9f; color: white; border: none;
+      border-radius: 8px; padding: 9px 16px; font-size: 13px;
+      font-weight: 600; cursor: pointer; transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .add-btn:hover { background: #1a5080; }
+
+    /* ALCOHOL TAB */
+    .alcohol-header {
+      background: white; border-radius: 12px; padding: 20px;
+      margin-bottom: 16px;
+    }
+    .alcohol-header h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .alcohol-header p { font-size: 13px; color: #64748b; }
+
+    .alcohol-item {
+      background: white; border-radius: 12px;
+      margin-bottom: 12px; overflow: hidden;
+    }
+    .alc-item-header {
+      display: grid;
+      grid-template-columns: 1fr 100px 100px;
+      gap: 12px; align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .alc-name { font-weight: 600; font-size: 15px; }
+    .alc-qty-input, .alc-price-input {
+      border: 1.5px solid #e2e8f0; border-radius: 8px;
+      padding: 8px 10px; font-size: 13px; outline: none; text-align: center; width: 100%;
+    }
+    .alc-qty-input:focus, .alc-price-input:focus { border-color: #2d6a9f; }
+    .alc-label { font-size: 11px; color: #94a3b8; text-align: center; margin-bottom: 3px; }
+
+    .alc-crew-row {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      padding: 14px 20px;
+    }
+    .alc-person-btn {
+      padding: 7px 14px; border-radius: 20px;
+      border: 2px solid #e2e8f0; background: white;
+      font-size: 13px; cursor: pointer; transition: all 0.15s;
+      color: #475569;
+    }
+    .alc-person-btn.in {
+      background: #2d6a9f; border-color: #2d6a9f; color: white;
+    }
+    .alc-person-btn:hover:not(.in) { border-color: #2d6a9f; color: #2d6a9f; }
+
+    /* TOTAL */
+    .total-card {
+      background: linear-gradient(135deg, #1a3a5c, #2d6a9f);
+      color: white; border-radius: 12px; padding: 20px;
+      margin-top: 16px;
+    }
+    .total-card h3 { font-size: 14px; opacity: 0.75; margin-bottom: 12px; }
+    .total-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-size: 14px;
+    }
+    .total-row:last-child { border-bottom: none; font-weight: 700; font-size: 16px; margin-top: 4px; }
+    .total-row .person-name { opacity: 0.85; }
+    .total-row .amount { font-weight: 600; }
+
+    /* ADD ALCOHOL ITEM */
+    .add-alc-btn {
+      background: white; border: 2px dashed #cbd5e0;
+      border-radius: 12px; padding: 16px; width: 100%;
+      text-align: center; color: #64748b; cursor: pointer;
+      font-size: 14px; transition: all 0.2s;
+    }
+    .add-alc-btn:hover { border-color: #2d6a9f; color: #2d6a9f; }
+
+    /* CUSTOM ITEMS TAB */
+    .custom-note {
+      background: #eff6ff; border-radius: 12px; padding: 16px 20px;
+      margin-bottom: 16px; font-size: 14px; color: #1e40af;
+      border: 1px solid #bfdbfe;
+    }
+
+    /* SUMMARY */
+    .summary-card {
+      background: white; border-radius: 12px; padding: 20px;
+      margin-bottom: 16px;
+    }
+    .summary-card h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .progress-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 10px;
+    }
+    .progress-label { font-size: 13px; color: #475569; width: 100px; }
+    .progress-bar { flex: 1; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #22c55e; border-radius: 4px; transition: width 0.3s; }
+    .progress-pct { font-size: 12px; color: #64748b; width: 36px; text-align: right; }
+
+    /* EXPORT */
+    .export-btn {
+      background: white; border: 1.5px solid #e2e8f0;
+      border-radius: 10px; padding: 12px 20px;
+      font-size: 13px; color: #475569; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.15s; margin-right: 8px; margin-bottom: 16px;
+    }
+    .export-btn:hover { border-color: #2d6a9f; color: #2d6a9f; }
+
+    /* MOBILE */
+    @media (max-width: 480px) {
+      .item-row { grid-template-columns: 24px 1fr auto 28px; }
+      .item-edit-qty { display: none !important; }
+      .header h1 { font-size: 22px; }
+      .header .stats { gap: 20px; }
+      .alc-item-header { grid-template-columns: 1fr 80px 80px; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Яхтинг · Croquetas Team</h1>
+  <div class="sub">23–30 мая 2026 · Катамаран · 7 человек</div>
+  <div class="stats">
+    <div class="stat"><div class="val">7</div><div class="lbl">дней</div></div>
+    <div class="stat"><div class="val" id="crew-count">7</div><div class="lbl">человек</div></div>
+    <div class="stat"><div class="val" id="checked-count">0</div><div class="lbl">куплено</div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('list')">Список</div>
+  <div class="tab" onclick="showTab('alcohol')">Алкоголь</div>
+  <div class="tab" onclick="showTab('custom')">+ Своё</div>
+  <div class="tab" onclick="showTab('summary')">Итог</div>
+</div>
+
+<!-- LIST TAB -->
+<div class="content active" id="tab-list">
+
+  <div class="crew-section">
+    <h2>Экипаж</h2>
+    <div class="crew-grid" id="crew-grid"></div>
+    <button class="crew-add-btn" onclick="addCrewMember()">+ добавить участника</button>
+  </div>
+
+  <div id="categories-container"></div>
+
+</div>
+
+<!-- ALCOHOL TAB -->
+<div class="content" id="tab-alcohol">
+  <div class="alcohol-header">
+    <h2>Алкоголь</h2>
+    <p>Отметь тех, кто пьёт каждую позицию. Стоимость поделится только между ними.</p>
+  </div>
+  <div id="alc-container"></div>
+  <button class="add-alc-btn" onclick="addAlcItem()">+ добавить позицию</button>
+  <div class="total-card" id="alc-total" style="display:none">
+    <h3>Итого алкоголь по людям</h3>
+    <div id="alc-total-rows"></div>
+  </div>
+</div>
+
+<!-- CUSTOM TAB -->
+<div class="content" id="tab-custom">
+  <div class="custom-note">
+    Добавь сюда всё, что хочешь взять от себя — личные снеки, напитки, специи. Это останется в общем списке.
+  </div>
+  <div id="custom-container"></div>
+  <div style="padding: 8px 0;">
+    <select id="custom-cat-select" style="border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:14px;outline:none;margin-bottom:12px;width:100%"></select>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="custom-name" placeholder="Название продукта" class="add-item-input" style="flex:2">
+      <input type="text" id="custom-qty" placeholder="Кол-во" class="add-item-qty">
+      <input type="text" id="custom-who" placeholder="Кто добавляет" class="add-item-qty" style="width:120px">
+    </div>
+    <button class="add-btn" style="margin-top:10px;width:100%" onclick="addCustomItem()">Добавить в список</button>
+  </div>
+</div>
+
+<!-- SUMMARY TAB -->
+<div class="content" id="tab-summary">
+  <div class="summary-card">
+    <h2>Прогресс закупки</h2>
+    <div id="summary-progress"></div>
+  </div>
+  <div style="margin-bottom:8px">
+    <button class="export-btn" onclick="exportData()">📋 Скопировать список</button>
+    <button class="export-btn" onclick="printList()">🖨️ Распечатать</button>
+    <button class="export-btn" onclick="saveState()">💾 Сохранить</button>
+  </div>
+  <div class="summary-card" id="summary-unchecked">
+    <h2>Ещё не куплено</h2>
+    <div id="unchecked-list"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════
+// DATA
+// ═══════════════════════════════════
+
+const DEFAULT_CREW = ['Ирина', 'Денис', '', '', '', '', ''];
+
+const CATEGORIES = [
+  {
+    id: 'veg', name: 'Овощи', icon: '🥦',
+    items: [
+      { name: 'Огурцы', qty: '18 шт' },
+      { name: 'Помидоры', qty: '12 шт' },
+      { name: 'Авокадо', qty: '23 шт' },
+      { name: 'Черри томаты', qty: '2 упак' },
+      { name: 'Лук красный', qty: '2 шт' },
+      { name: 'Чеснок', qty: '2 головки' },
+      { name: 'Салат (листья)', qty: '4 упак' },
+      { name: 'Зелень', qty: '4 пучка' },
+      { name: 'Мята', qty: '2 пучка' },
+    ]
+  },
+  {
+    id: 'fruit', name: 'Фрукты', icon: '🍋',
+    items: [
+      { name: 'Лимон / лайм', qty: '7 шт' },
+      { name: 'Яблоки', qty: '7 шт' },
+      { name: 'Бананы', qty: '12 шт' },
+      { name: 'Манго / папайя', qty: '12 шт' },
+    ]
+  },
+  {
+    id: 'nuts', name: 'Орехи и семечки', icon: '🌰',
+    items: [
+      { name: 'Семечки подсолнуха', qty: '1 пак' },
+      { name: 'Тыквенные семечки', qty: '1 пак' },
+      { name: 'Орехи для перекуса (миндаль, фисташки)', qty: '7 пак' },
+    ]
+  },
+  {
+    id: 'protein', name: 'Мясо / рыба', icon: '🐟',
+    items: [
+      { name: 'Рыба', qty: '3.5 кг' },
+    ]
+  },
+  {
+    id: 'snacks', name: 'Снеки', icon: '🧀',
+    items: [
+      { name: 'Хамон / прошутто', qty: '5 упак' },
+      { name: 'Сыр', qty: '3 шт' },
+    ]
+  },
+  {
+    id: 'cans', name: 'Консервы', icon: '🥫',
+    items: [
+      { name: 'Оливки', qty: '2 банки' },
+      { name: 'Кукуруза', qty: '2 банки' },
+      { name: 'Фасоль в томате', qty: '2 банки' },
+      { name: 'Сардины', qty: '4 банки' },
+    ]
+  },
+  {
+    id: 'grocery', name: 'Бакалея', icon: '🛒',
+    items: [
+      { name: 'Гранола', qty: '1 пак' },
+      { name: 'Паста (свежая)', qty: '3 пак' },
+      { name: 'Рис', qty: '1 кг' },
+      { name: 'Яйца', qty: '24 шт' },
+      { name: 'Оливковое масло', qty: '1 бут' },
+      { name: 'Соль', qty: '1 пак' },
+      { name: 'Чёрный перец', qty: '1 пак' },
+      { name: 'Орегано', qty: '1 пак' },
+      { name: 'Томатный соус для пасты', qty: '4 банки' },
+      { name: 'Песто', qty: '1 банка' },
+      { name: 'Соевый соус', qty: '1 бут' },
+      { name: 'Хлеб (обычный)', qty: '2 шт', comment: 'и 1 без глютена' },
+      { name: 'Чипсы', qty: '3 пак' },
+      { name: 'Чай', qty: '—', comment: 'взять из Мадрида' },
+      { name: 'Кофе', qty: '2 пак' },
+      { name: 'Печенье и сладкое', qty: '5 упак' },
+      { name: 'Мёд', qty: '1 бут' },
+      { name: 'Хумус', qty: '3 упак' },
+      { name: 'Гуакамоле', qty: '3 упак' },
+      { name: 'Картошка', qty: '2 кг' },
+    ]
+  },
+  {
+    id: 'dairy', name: 'Молочное', icon: '🥛',
+    items: [
+      { name: 'Йогурт', qty: '24 шт' },
+      { name: 'Овсяное молоко', qty: '2 л' },
+      { name: 'Прочие молочные продукты', qty: '2 упак' },
+    ]
+  },
+  {
+    id: 'water', name: 'Вода и напитки', icon: '💧',
+    items: [
+      { name: 'Вода 1.5 л', qty: '30 бут' },
+      { name: 'Вода 0.5 л', qty: '70 бут' },
+      { name: 'Сок', qty: '6 пак' },
+      { name: 'Кола', qty: '24 шт' },
+    ]
+  },
+  {
+    id: 'household', name: 'Хозяйство', icon: '🧹',
+    items: [
+      { name: 'Мыло', qty: '3 шт', comment: '2 туалета + кухня' },
+      { name: 'Средство для посуды', qty: '1 шт' },
+      { name: 'Перчатки резиновые', qty: '2 пары', comment: 'включая XXL' },
+      { name: 'Губки для посуды', qty: '2 шт' },
+      { name: 'Металлическая мочалка', qty: '1 шт' },
+      { name: 'Тряпки для стола', qty: '2 шт' },
+      { name: 'Тряпки для пола', qty: '3 шт', comment: 'на случай дождя' },
+      { name: 'Бумажные полотенца', qty: '6 рул' },
+      { name: 'Туалетная бумага', qty: '12 рул' },
+      { name: 'Пищевая плёнка', qty: '1 шт' },
+      { name: 'Фольга', qty: '1 шт' },
+      { name: 'Прищепки', qty: '—', comment: 'взять из Мадрида' },
+      { name: 'Большие мусорные пакеты', qty: '2 рул' },
+      { name: 'Маленькие мусорные пакеты', qty: '1 рул' },
+    ]
+  },
+];
+
+const DEFAULT_ALC = [
+  { name: 'Вино красное', qty: '6', price: '', participants: [] },
+  { name: 'Вино белое', qty: '6', price: '', participants: [] },
+  { name: 'Сангрия', qty: '6', price: '', participants: [] },
+  { name: 'Апероль', qty: '6', price: '', participants: [] },
+];
+
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('yacht-shopping-2026');
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return {
+    crew: [...DEFAULT_CREW],
+    categories: CATEGORIES.map(c => ({
+      ...c,
+      open: true,
+      items: c.items.map(i => ({ ...i, checked: false, id: Math.random().toString(36).slice(2) }))
+    })),
+    alc: DEFAULT_ALC.map(a => ({ ...a, id: Math.random().toString(36).slice(2) })),
+    customItems: [],
+  };
+}
+
+function saveState() {
+  localStorage.setItem('yacht-shopping-2026', JSON.stringify(state));
+  showToast('Сохранено!');
+}
+
+// ═══════════════════════════════════
+// TABS
+// ═══════════════════════════════════
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const tabs = ['list', 'alcohol', 'custom', 'summary'];
+    t.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'summary') renderSummary();
+  if (name === 'alcohol') renderAlc();
+}
+
+// ═══════════════════════════════════
+// CREW
+// ═══════════════════════════════════
+
+function renderCrew() {
+  const grid = document.getElementById('crew-grid');
+  grid.innerHTML = '';
+  state.crew.forEach((name, i) => {
+    const div = document.createElement('div');
+    div.className = 'crew-item';
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.placeholder = 'Имя ' + (i + 1);
+    inp.value = name;
+    inp.oninput = () => {
+      state.crew[i] = inp.value;
+      updateCrewCount();
+      renderAlcPersonButtons();
+    };
+    div.appendChild(inp);
+    grid.appendChild(div);
+  });
+}
+
+function addCrewMember() {
+  state.crew.push('');
+  renderCrew();
+  updateCrewCount();
+}
+
+function updateCrewCount() {
+  const count = state.crew.filter(n => n.trim()).length;
+  document.getElementById('crew-count').textContent = count || state.crew.length;
+}
+
+// ═══════════════════════════════════
+// SHOPPING LIST
+// ═══════════════════════════════════
+
+function renderList() {
+  const container = document.getElementById('categories-container');
+  container.innerHTML = '';
+
+  state.categories.forEach((cat, ci) => {
+    const catEl = document.createElement('div');
+    catEl.className = 'category';
+
+    const checkedCount = cat.items.filter(i => i.checked).length;
+
+    catEl.innerHTML = `
+      <div class="cat-header" onclick="toggleCat(${ci})">
+        <div class="cat-title">
+          <span class="cat-icon">${cat.icon}</span>
+          <span>${cat.name}</span>
+          <span class="cat-count">${checkedCount}/${cat.items.length}</span>
+        </div>
+        <span class="cat-toggle ${cat.open ? 'open' : ''}">›</span>
+      </div>
+    `;
+
+    if (cat.open) {
+      const body = document.createElement('div');
+      body.className = 'cat-body';
+
+      cat.items.forEach((item, ii) => {
+        const row = document.createElement('div');
+        row.className = 'item-row';
+        row.innerHTML = `
+          <div class="item-check ${item.checked ? 'checked' : ''}" onclick="toggleItem(${ci},${ii})"></div>
+          <div>
+            <div class="item-name ${item.checked ? 'checked-text' : ''}">${item.name}</div>
+            ${item.comment ? `<div class="item-comment">${item.comment}</div>` : ''}
+          </div>
+          <div class="item-qty">${item.qty}</div>
+          <input class="item-edit-qty" value="${item.qty}" onchange="updateQty(${ci},${ii},this.value)" title="Изменить количество">
+          <button class="item-del" onclick="deleteItem(${ci},${ii})" title="Удалить">×</button>
+        `;
+        // show edit qty on click
+        const qtyEl = row.querySelector('.item-qty');
+        const editEl = row.querySelector('.item-edit-qty');
+        qtyEl.style.cursor = 'pointer';
+        qtyEl.title = 'Нажми для редактирования';
+        qtyEl.onclick = (e) => {
+          e.stopPropagation();
+          qtyEl.style.display = 'none';
+          editEl.style.display = 'block';
+          editEl.focus();
+        };
+        editEl.onblur = () => {
+          qtyEl.textContent = editEl.value;
+          qtyEl.style.display = '';
+          editEl.style.display = 'none';
+        };
+        body.appendChild(row);
+      });
+
+      // Add item row
+      const addRow = document.createElement('div');
+      addRow.className = 'add-item-row';
+      addRow.innerHTML = `
+        <input type="text" class="add-item-input" placeholder="Добавить продукт..." id="add-name-${ci}">
+        <input type="text" class="add-item-qty" placeholder="Кол-во" id="add-qty-${ci}">
+        <button class="add-btn" onclick="addItem(${ci})">+</button>
+      `;
+      const nameInp = addRow.querySelector('.add-item-input');
+      nameInp.onkeydown = (e) => { if (e.key === 'Enter') addItem(ci); };
+      body.appendChild(addRow);
+      catEl.appendChild(body);
+    }
+
+    container.appendChild(catEl);
+  });
+
+  updateCheckedCount();
+}
+
+function toggleCat(ci) {
+  state.categories[ci].open = !state.categories[ci].open;
+  renderList();
+}
+
+function toggleItem(ci, ii) {
+  state.categories[ci].items[ii].checked = !state.categories[ci].items[ii].checked;
+  saveState();
+  renderList();
+}
+
+function updateQty(ci, ii, val) {
+  state.categories[ci].items[ii].qty = val;
+}
+
+function deleteItem(ci, ii) {
+  state.categories[ci].items.splice(ii, 1);
+  renderList();
+}
+
+function addItem(ci) {
+  const nameEl = document.getElementById('add-name-' + ci);
+  const qtyEl = document.getElementById('add-qty-' + ci);
+  const name = nameEl.value.trim();
+  if (!name) return;
+  state.categories[ci].items.push({
+    name, qty: qtyEl.value || '—',
+    checked: false, id: Math.random().toString(36).slice(2)
+  });
+  nameEl.value = ''; qtyEl.value = '';
+  renderList();
+}
+
+function updateCheckedCount() {
+  let total = 0, checked = 0;
+  state.categories.forEach(c => {
+    total += c.items.length;
+    checked += c.items.filter(i => i.checked).length;
+  });
+  document.getElementById('checked-count').textContent = checked;
+}
+
+// ═══════════════════════════════════
+// ALCOHOL
+// ═══════════════════════════════════
+
+function renderAlc() {
+  const container = document.getElementById('alc-container');
+  container.innerHTML = '';
+
+  state.alc.forEach((item, ai) => {
+    const el = document.createElement('div');
+    el.className = 'alcohol-item';
+
+    const crewButtons = state.crew
+      .map((name, ci) => name.trim() ? `
+        <button class="alc-person-btn ${item.participants.includes(ci) ? 'in' : ''}"
+          onclick="toggleAlcPerson(${ai},${ci})">
+          ${name}
+        </button>` : '').join('');
+
+    el.innerHTML = `
+      <div class="alc-item-header">
+        <div>
+          <div class="alc-name">${item.name}</div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:2px">
+            ${item.participants.length ? item.participants.map(ci => state.crew[ci]).filter(Boolean).join(', ') : 'Никто не выбран'}
+          </div>
+        </div>
+        <div>
+          <div class="alc-label">Бутылок</div>
+          <input class="alc-qty-input" type="number" value="${item.qty}" min="0"
+            onchange="state.alc[${ai}].qty=this.value;calcAlcTotal()">
+        </div>
+        <div>
+          <div class="alc-label">Цена €</div>
+          <input class="alc-price-input" type="number" value="${item.price}" placeholder="0"
+            oninput="state.alc[${ai}].price=this.value;calcAlcTotal()">
+        </div>
+      </div>
+      <div class="alc-crew-row">${crewButtons}</div>
+    `;
+    container.appendChild(el);
+  });
+
+  calcAlcTotal();
+}
+
+function renderAlcPersonButtons() {
+  // re-render alc if tab is visible
+  if (document.getElementById('tab-alcohol').classList.contains('active')) {
+    renderAlc();
+  }
+}
+
+function toggleAlcPerson(ai, ci) {
+  const arr = state.alc[ai].participants;
+  const idx = arr.indexOf(ci);
+  if (idx === -1) arr.push(ci);
+  else arr.splice(idx, 1);
+  renderAlc();
+}
+
+function calcAlcTotal() {
+  const totals = {};
+  let hasData = false;
+
+  state.alc.forEach(item => {
+    const price = parseFloat(item.price) || 0;
+    const qty = parseFloat(item.qty) || 0;
+    const total = price * qty;
+    if (!total || !item.participants.length) return;
+    hasData = true;
+    const share = total / item.participants.length;
+    item.participants.forEach(ci => {
+      const name = state.crew[ci] || ('Участник ' + (ci+1));
+      totals[name] = (totals[name] || 0) + share;
+    });
+  });
+
+  const totalCard = document.getElementById('alc-total');
+  const totalRows = document.getElementById('alc-total-rows');
+
+  if (!hasData) { totalCard.style.display = 'none'; return; }
+  totalCard.style.display = 'block';
+
+  const grandTotal = Object.values(totals).reduce((a,b) => a+b, 0);
+  totalRows.innerHTML = Object.entries(totals).sort((a,b) => b[1]-a[1]).map(([name, amt]) => `
+    <div class="total-row">
+      <span class="person-name">${name}</span>
+      <span class="amount">${amt.toFixed(0)} €</span>
+    </div>
+  `).join('') + `
+    <div class="total-row">
+      <span>Итого</span>
+      <span>${grandTotal.toFixed(0)} €</span>
+    </div>
+  `;
+}
+
+function addAlcItem() {
+  const name = prompt('Название напитка:');
+  if (!name) return;
+  state.alc.push({ name, qty: '1', price: '', participants: [], id: Math.random().toString(36).slice(2) });
+  renderAlc();
+}
+
+// ═══════════════════════════════════
+// CUSTOM
+// ═══════════════════════════════════
+
+function populateCatSelect() {
+  const sel = document.getElementById('custom-cat-select');
+  sel.innerHTML = state.categories.map((c, i) => `<option value="${i}">${c.icon} ${c.name}</option>`).join('');
+}
+
+function addCustomItem() {
+  const name = document.getElementById('custom-name').value.trim();
+  if (!name) return;
+  const qty = document.getElementById('custom-qty').value || '—';
+  const who = document.getElementById('custom-who').value.trim() || '';
+  const ci = parseInt(document.getElementById('custom-cat-select').value);
+  state.categories[ci].items.push({
+    name: name + (who ? ` (${who})` : ''),
+    qty, checked: false, id: Math.random().toString(36).slice(2), custom: true
+  });
+  document.getElementById('custom-name').value = '';
+  document.getElementById('custom-qty').value = '';
+  document.getElementById('custom-who').value = '';
+  showToast('Добавлено в ' + state.categories[ci].name);
+  saveState();
+}
+
+// ═══════════════════════════════════
+// SUMMARY
+// ═══════════════════════════════════
+
+function renderSummary() {
+  const progressEl = document.getElementById('summary-progress');
+  const uncheckedEl = document.getElementById('unchecked-list');
+
+  progressEl.innerHTML = state.categories.map(cat => {
+    const total = cat.items.length;
+    const done = cat.items.filter(i => i.checked).length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    return `
+      <div class="progress-row">
+        <div class="progress-label">${cat.icon} ${cat.name}</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-pct">${pct}%</div>
+      </div>
+    `;
+  }).join('');
+
+  const unchecked = [];
+  state.categories.forEach(cat => {
+    cat.items.filter(i => !i.checked).forEach(item => {
+      unchecked.push(`<div style="padding:8px 0;border-bottom:1px solid #f1f5f9;font-size:14px;display:flex;justify-content:space-between"><span>${cat.icon} ${item.name}</span><span style="color:#94a3b8">${item.qty}</span></div>`);
+    });
+  });
+  uncheckedEl.innerHTML = unchecked.length ? unchecked.join('') : '<div style="color:#94a3b8;font-size:14px;padding:8px 0">Всё куплено!</div>';
+}
+
+function exportData() {
+  let text = `Яхтинг 23–30 мая 2026 · Shopping List\n\n`;
+  state.categories.forEach(cat => {
+    text += `${cat.icon} ${cat.name.toUpperCase()}\n`;
+    cat.items.forEach(item => {
+      text += `  ${item.checked ? '✓' : '☐'} ${item.name} — ${item.qty}\n`;
+    });
+    text += '\n';
+  });
+  navigator.clipboard.writeText(text).then(() => showToast('Список скопирован!'));
+}
+
+function printList() {
+  window.print();
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a3a5c;color:white;padding:10px 20px;border-radius:20px;font-size:14px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,0.15)';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2000);
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+
+renderCrew();
+renderList();
+populateCatSelect();
+updateCrewCount();
+
+// auto-save every 30s
+setInterval(saveState, 30000);
+</script>
+</body>
+</html>
