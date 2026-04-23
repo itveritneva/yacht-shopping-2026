@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Яхтинг 23–30 мая ⚓</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -521,21 +522,18 @@ const DEFAULT_ALC = [
 ];
 
 // ═══════════════════════════════════
-// STATE
+// SUPABASE + STATE
 // ═══════════════════════════════════
 
-let state = loadState();
+const SUPABASE_URL = 'https://hhfbkwlucbkgtmtejnjm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhoZmJrd2x1Y2JrZ3RtdGVqbmptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDE3NjMsImV4cCI6MjA5MjQ3Nzc2M30.LzIyecCRvqSVYf7Uc_SOFqmIzlf0_MNupeLB4pYuDmY';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function loadState() {
-  try {
-    const saved = localStorage.getItem('yacht-shopping-2026');
-    if (saved) return JSON.parse(saved);
-  } catch(e) {}
+function defaultState() {
   return {
     crew: [...DEFAULT_CREW],
     categories: CATEGORIES.map(c => ({
-      ...c,
-      open: true,
+      ...c, open: true,
       items: c.items.map(i => ({ ...i, checked: false, id: Math.random().toString(36).slice(2) }))
     })),
     alc: DEFAULT_ALC.map(a => ({ ...a, id: Math.random().toString(36).slice(2) })),
@@ -543,9 +541,27 @@ function loadState() {
   };
 }
 
-function saveState() {
-  localStorage.setItem('yacht-shopping-2026', JSON.stringify(state));
+let state = defaultState();
+
+async function loadState() {
+  const { data, error } = await sb.from('yacht_state').select('data').eq('id', 1).single();
+  if (data && data.data && Object.keys(data.data).length > 0) {
+    state = data.data;
+  }
+}
+
+async function saveState() {
+  await sb.from('yacht_state').upsert({ id: 1, data: state, updated_at: new Date().toISOString() });
   showToast('Сохранено!');
+}
+
+function renderAll() {
+  renderCrew();
+  renderList();
+  populateCatSelect();
+  updateCrewCount();
+  if (document.getElementById('tab-alcohol').classList.contains('active')) renderAlc();
+  if (document.getElementById('tab-summary').classList.contains('active')) renderSummary();
 }
 
 // ═══════════════════════════════════
@@ -910,13 +926,21 @@ function showToast(msg) {
 // INIT
 // ═══════════════════════════════════
 
-renderCrew();
-renderList();
-populateCatSelect();
-updateCrewCount();
+async function init() {
+  await loadState();
+  renderAll();
 
-// auto-save every 30s
-setInterval(saveState, 30000);
+  // realtime: обновляем UI когда кто-то другой изменил список
+  sb.channel('yacht_state')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'yacht_state' }, payload => {
+      state = payload.new.data;
+      renderAll();
+      showToast('Список обновлён!');
+    })
+    .subscribe();
+}
+
+init();
 </script>
 </body>
 </html>
