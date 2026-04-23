@@ -551,7 +551,8 @@ async function loadState() {
 }
 
 async function saveState() {
-  await sb.from('yacht_state').upsert({ id: 1, data: state, updated_at: new Date().toISOString() });
+  const { error } = await sb.from('yacht_state').upsert({ id: 1, data: state, updated_at: new Date().toISOString() });
+  if (error) { showToast('Ошибка сохранения: ' + error.message); return; }
   showToast('Сохранено!');
 }
 
@@ -597,6 +598,7 @@ function renderCrew() {
       state.crew[i] = inp.value;
       updateCrewCount();
       renderAlcPersonButtons();
+      saveState();
     };
     div.appendChild(inp);
     grid.appendChild(div);
@@ -708,10 +710,12 @@ function toggleItem(ci, ii) {
 
 function updateQty(ci, ii, val) {
   state.categories[ci].items[ii].qty = val;
+  saveState();
 }
 
 function deleteItem(ci, ii) {
   state.categories[ci].items.splice(ii, 1);
+  saveState();
   renderList();
 }
 
@@ -725,6 +729,7 @@ function addItem(ci) {
     checked: false, id: Math.random().toString(36).slice(2)
   });
   nameEl.value = ''; qtyEl.value = '';
+  saveState();
   renderList();
 }
 
