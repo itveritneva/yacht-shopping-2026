@@ -294,6 +294,38 @@
     }
     .export-btn:hover { border-color: #2d6a9f; color: #2d6a9f; }
 
+    /* MENU TAB */
+    .menu-intro {
+      background: white; border-radius: 12px; padding: 16px 20px;
+      margin-bottom: 16px; font-size: 14px; color: #475569;
+    }
+    .day-card {
+      background: white; border-radius: 12px;
+      margin-bottom: 14px; overflow: hidden;
+    }
+    .day-header {
+      background: linear-gradient(90deg, #1a3a5c, #2d6a9f);
+      color: white; padding: 12px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .day-header .day-name { font-weight: 700; font-size: 15px; }
+    .day-header .day-date { font-size: 12px; opacity: 0.7; }
+    .meal-row {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 13px 20px; border-bottom: 1px solid #f8fafc;
+    }
+    .meal-row:last-child { border-bottom: none; }
+    .meal-badge {
+      font-size: 11px; font-weight: 700; padding: 3px 8px;
+      border-radius: 10px; white-space: nowrap; flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .meal-badge.b { background: #fef9c3; color: #854d0e; }
+    .meal-badge.l { background: #dcfce7; color: #166534; }
+    .meal-badge.d { background: #dbeafe; color: #1e40af; }
+    .meal-text { font-size: 14px; color: #1a2332; }
+    .meal-sub { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
     /* MOBILE */
     @media (max-width: 480px) {
       .item-row { grid-template-columns: 24px 1fr auto 28px; }
@@ -324,6 +356,7 @@
 <div class="tabs">
   <div class="tab active" onclick="showTab('list')">Список</div>
   <div class="tab" onclick="showTab('alcohol')">Алкоголь</div>
+  <div class="tab" onclick="showTab('menu')">Меню</div>
   <div class="tab" onclick="showTab('custom')">+ Своё</div>
   <div class="tab" onclick="showTab('summary')">Итог</div>
   <button onclick="saveState()" style="margin:6px 10px;padding:0 14px;background:#2d6a9f;color:white;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Сохранить</button>
@@ -376,6 +409,62 @@
       <input type="text" id="custom-who" placeholder="Кто добавляет" class="add-item-qty" style="width:120px">
     </div>
     <button class="add-btn" style="margin-top:10px;width:100%" onclick="addCustomItem()">Добавить в список</button>
+  </div>
+</div>
+
+<!-- MENU TAB -->
+<div class="content" id="tab-menu">
+  <div class="menu-intro">
+    Примерное меню на 7 дней — на основе вашего списка продуктов. Можно менять как угодно.
+  </div>
+
+  <div class="day-card">
+    <div class="day-header"><span class="day-name">День 1</span><span class="day-date">23 мая — прибытие</span></div>
+    <div class="meal-row"><span class="meal-badge b">Завтрак</span><div><div class="meal-text">В дороге / до посадки</div></div></div>
+    <div class="meal-row"><span class="meal-badge l">Обед</span><div><div class="meal-text">Сборная тарелка: хамон, сыр, хлеб, оливки, черри</div><div class="meal-sub">быстро после загрузки на борт</div></div></div>
+    <div class="meal-row"><span class="meal-badge d">Ужин</span><div><div class="meal-text">Паста с томатным соусом + сардины + салат</div><div class="meal-sub">простой старт, ничего сложного</div></div></div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header"><span class="day-name">День 2</span><span class="day-date">24 мая</span></div>
+    <div class="meal-row"><span class="meal-badge b">Завтрак</span><div><div class="meal-text">Гранола с йогуртом + манго / банан</div></div></div>
+    <div class="meal-row"><span class="meal-badge l">Обед</span><div><div class="meal-text">Большой салат: авокадо, черри, огурец, оливки, яйцо</div><div class="meal-sub">заправка — оливковое масло + лимон</div></div></div>
+    <div class="meal-row"><span class="meal-badge d">Ужин</span><div><div class="meal-text">Рыба на гриле + картошка + зелень</div></div></div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header"><span class="day-name">День 3</span><span class="day-date">25 мая</span></div>
+    <div class="meal-row"><span class="meal-badge b">Завтрак</span><div><div class="meal-text">Омлет с помидорами и зеленью + тост с авокадо</div></div></div>
+    <div class="meal-row"><span class="meal-badge l">Обед</span><div><div class="meal-text">Рис с овощами + соевый соус + яйцо</div></div></div>
+    <div class="meal-row"><span class="meal-badge d">Ужин</span><div><div class="meal-text">Паста с песто + салат из огурца и мяты</div></div></div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header"><span class="day-name">День 4</span><span class="day-date">26 мая</span></div>
+    <div class="meal-row"><span class="meal-badge b">Завтрак</span><div><div class="meal-text">Яйца пашот + хлеб + хумус + черри</div></div></div>
+    <div class="meal-row"><span class="meal-badge l">Обед</span><div><div class="meal-text">Пикник на воде: сардины, хлеб, томаты, оливки, сыр</div><div class="meal-sub">удобно когда под парусом</div></div></div>
+    <div class="meal-row"><span class="meal-badge d">Ужин</span><div><div class="meal-text">Рыба с рисом + гуакамоле + лайм</div></div></div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header"><span class="day-name">День 5</span><span class="day-date">27 мая</span></div>
+    <div class="meal-row"><span class="meal-badge b">Завтрак</span><div><div class="meal-text">Гранола + йогурт + папайя</div></div></div>
+    <div class="meal-row"><span class="meal-badge l">Обед</span><div><div class="meal-text">Паста с фасолью в томате + тёртый сыр</div></div></div>
+    <div class="meal-row"><span class="meal-badge d">Ужин</span><div><div class="meal-text">Куриные ножки + батат + салат с лимонной заправкой</div></div></div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header"><span class="day-name">День 6</span><span class="day-date">28 мая</span></div>
+    <div class="meal-row"><span class="meal-badge b">Завтрак</span><div><div class="meal-text">Яичница с томатами + хлеб + мёд</div></div></div>
+    <div class="meal-row"><span class="meal-badge l">Обед</span><div><div class="meal-text">Авокадо-боул: рис, яйцо, авокадо, соевый соус, кунжут</div></div></div>
+    <div class="meal-row"><span class="meal-badge d">Ужин</span><div><div class="meal-text">Рыба на гриле + картошка + зелёный салат</div></div></div>
+  </div>
+
+  <div class="day-card">
+    <div class="day-header"><span class="day-name">День 7</span><span class="day-date">29–30 мая — финал</span></div>
+    <div class="meal-row"><span class="meal-badge b">Завтрак</span><div><div class="meal-text">Фруктовая тарелка + йогурт + орехи</div><div class="meal-sub">всё что осталось из фруктов</div></div></div>
+    <div class="meal-row"><span class="meal-badge l">Обед</span><div><div class="meal-text">Сборная прощальная тарелка + хлеб + сыр + хамон</div></div></div>
+    <div class="meal-row"><span class="meal-badge d">Ужин</span><div><div class="meal-text">Праздничный: рыба + всё лучшее что осталось</div><div class="meal-sub">последний вечер на воде</div></div></div>
   </div>
 </div>
 
@@ -604,7 +693,7 @@ function renderAll() {
 
 function showTab(name) {
   document.querySelectorAll('.tab').forEach((t, i) => {
-    const tabs = ['list', 'alcohol', 'custom', 'summary'];
+    const tabs = ['list', 'alcohol', 'menu', 'custom', 'summary'];
     t.classList.toggle('active', tabs[i] === name);
   });
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
