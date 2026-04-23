@@ -352,7 +352,10 @@
     <p>Отметь тех, кто пьёт каждую позицию. Стоимость поделится только между ними.</p>
   </div>
   <div id="alc-container"></div>
-  <button class="add-alc-btn" onclick="addAlcItem()">+ добавить позицию</button>
+  <div style="background:white;border-radius:12px;padding:16px 20px;margin-bottom:12px;display:flex;gap:8px;align-items:center">
+    <input type="text" id="new-alc-name" placeholder="Название напитка..." class="add-item-input" style="flex:1" onkeydown="if(event.key==='Enter')addAlcItem()">
+    <button class="add-btn" onclick="addAlcItem()">+ Добавить</button>
+  </div>
   <div class="total-card" id="alc-total" style="display:none">
     <h3>Итого алкоголь по людям</h3>
     <div id="alc-total-rows"></div>
@@ -520,7 +523,6 @@ const CATEGORIES = [
 const DEFAULT_ALC = [
   { name: 'Вино красное', qty: '6', price: '', participants: [] },
   { name: 'Вино белое', qty: '6', price: '', participants: [] },
-  { name: 'Сангрия', qty: '6', price: '', participants: [] },
   { name: 'Апероль', qty: '6', price: '', participants: [] },
 ];
 
@@ -831,6 +833,7 @@ function toggleAlcPerson(ai, ci) {
   const idx = arr.indexOf(ci);
   if (idx === -1) arr.push(ci);
   else arr.splice(idx, 1);
+  saveState();
   renderAlc();
 }
 
@@ -872,9 +875,12 @@ function calcAlcTotal() {
 }
 
 function addAlcItem() {
-  const name = prompt('Название напитка:');
+  const inp = document.getElementById('new-alc-name');
+  const name = inp.value.trim();
   if (!name) return;
   state.alc.push({ name, qty: '1', price: '', participants: [], id: Math.random().toString(36).slice(2) });
+  inp.value = '';
+  saveState();
   renderAlc();
 }
 
